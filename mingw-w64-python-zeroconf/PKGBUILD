@@ -9,10 +9,11 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
 provides=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
 conflicts=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
 replaces=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
-pkgver=0.24.4
-pkgrel=1
+pkgver=0.25.1
+pkgrel=2
 pkgdesc="A pure python implementation of multicast DNS service discovery"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 url="https://github.com/jstasiak/python-zeroconf"
 license=('LGPL')
 depends=("${MINGW_PACKAGE_PREFIX}-python"
@@ -22,7 +23,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-python"
 makedepends=("${MINGW_PACKAGE_PREFIX}-python-setuptools")
 checkdepends=("${MINGW_PACKAGE_PREFIX}-python-pytest")
 source=("${_srcname}-${pkgver}.tar.gz"::"https://github.com/jstasiak/${_srcname}/archive/${pkgver}.tar.gz")
-sha256sums=('738b0ad9f795d8e5808c9e261cad854a74a5f288262ccc19234069aab0964e85')
+sha256sums=('d32dbc683318e4534348d518011944467f641892574a757c19083ec6f8c25afb')
 
 prepare() {
   rm -rf python-build-${CARCH} | true

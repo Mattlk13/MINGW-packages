@@ -12,7 +12,7 @@ diff --git a/src/app/qbs-setup-toolchains/gccprobe.cpp b/src/app/qbs-setup-toolc
 index 0ae9f6c..3d5e03c 100644
 --- a/src/app/qbs-setup-toolchains/gccprobe.cpp
 +++ b/src/app/qbs-setup-toolchains/gccprobe.cpp
-@@ -85,7 +85,9 @@ static QStringList validMinGWMachines()
+@@ -89,7 +89,9 @@
              QStringLiteral("i686-w64-mingw32.static"),
              QStringLiteral("x86_64-w64-mingw32.static"),
              QStringLiteral("i586-mingw32msvc"),
@@ -23,16 +23,15 @@ index 0ae9f6c..3d5e03c 100644
  }
  
  static QString gccMachineName(const QFileInfo &compiler)
-@@ -384,7 +384,7 @@ static Profile createGccProfile(const QString &compilerFilePath, Settings *setti
+@@ -458,7 +460,7 @@
  {
      const QString machineName = gccMachineName(compiler);
  
--    if (toolchainTypes.contains(QLatin1String("mingw"))) {
-+    if (toolchainTypes.contains(QLatin1String("mingw")) || toolchainTypes.contains(QLatin1String("msys"))) {
+-    if (toolchainType == QLatin1String("mingw")) {
++    if (toolchainType == QLatin1String("mingw") || toolchainType == QLatin1String("msys")) {
          if (!validMinGWMachines().contains(machineName)) {
              throw ErrorInfo(Tr::tr("Detected gcc platform '%1' is not supported.")
                              .arg(machineName));
-         }
 -- 
 2.3.5
 

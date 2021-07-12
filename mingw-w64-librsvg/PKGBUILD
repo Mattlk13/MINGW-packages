@@ -3,32 +3,38 @@
 _realname=librsvg
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=2.48.0
-pkgrel=1
+pkgver=2.50.3
+pkgrel=3
 pkgdesc="SVG rendering library (mingw-w64)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
 url="https://wiki.gnome.org/Projects/LibRsvg"
 license=("LGPL")
 makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
              "${MINGW_PACKAGE_PREFIX}-pkg-config"
-             "${MINGW_PACKAGE_PREFIX}-gdk-pixbuf2"
              "${MINGW_PACKAGE_PREFIX}-gobject-introspection"
              "${MINGW_PACKAGE_PREFIX}-vala"
              "${MINGW_PACKAGE_PREFIX}-rust>=1.26"
-             "setconf")
+             "${MINGW_PACKAGE_PREFIX}-gtk-doc")
 depends=("${MINGW_PACKAGE_PREFIX}-gdk-pixbuf2"
          "${MINGW_PACKAGE_PREFIX}-pango"
-         "${MINGW_PACKAGE_PREFIX}-libcroco")
+         "${MINGW_PACKAGE_PREFIX}-cairo"
+         "${MINGW_PACKAGE_PREFIX}-libxml2")
 optdepends=("${MINGW_PACKAGE_PREFIX}-gtk3: for rsvg-view-3")
 options=('staticlibs' 'strip')
 source=("https://download.gnome.org/sources/librsvg/${pkgver%.*}/${_realname}-${pkgver}.tar.xz"
-        "0005-hack-unixy-paths.patch")
-sha256sums=('4a348b76cf4c52838e9c337ca767a38fe7f742db40ccccf8ac99f1946872cda6'
-            'b23b094c0cb65fcbbbb952350448de6f3430b30f273e05acdbf7a56d634212dc')
+        "0005-hack-unixy-paths.patch"
+        "0006-fix-vapigen-deps.patch")
+sha256sums=('a4298a98e3a95fdd73c858c17d4dd018525fb09dbb13bbd668a0c2243989e958'
+            'b23b094c0cb65fcbbbb952350448de6f3430b30f273e05acdbf7a56d634212dc'
+            '8ac94e8b6b67c57d04f547e09a50b50a5722365b18f4ed76fb7cd0a9bc27d9c6')
 
 prepare() {
   cd "${srcdir}/${_realname}-${pkgver}"
   patch -p1 -i "${srcdir}/0005-hack-unixy-paths.patch"
+
+  # https://gitlab.gnome.org/GNOME/vala/-/issues/1199
+  patch -p1 -i "${srcdir}/0006-fix-vapigen-deps.patch"
 
   autoreconf -fiv
 }

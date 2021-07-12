@@ -4,20 +4,22 @@
 _realname=x265
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=3.2.1
-pkgrel=1
+pkgver=3.4
+pkgrel=2
 pkgdesc='Open Source H265/HEVC video encoder (mingw-w64)'
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 license=('GPL')
 depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
 makedepends=("${MINGW_PACKAGE_PREFIX}-nasm" "${MINGW_PACKAGE_PREFIX}-cmake")
 options=('strip')
-url='https://bitbucket.org/multicoreware/x265'
-source=("${_realname}-${pkgver}.tar.gz"::"https://bitbucket.org/multicoreware/x265/downloads/${_realname}_${pkgver}.tar.gz")
-sha256sums=('fb9badcf92364fd3567f8b5aa0e5e952aeea7a39a2b864387cec31e3b58cbbcc')
+url='https://bitbucket.org/multicoreware/x265_git'
+source=("${_realname}-${pkgver}.tar.gz"::"https://bitbucket.org/multicoreware/x265_git/get/${pkgver}.tar.gz")
+sha256sums=('7f2771799bea0f53b5ab47603d5bea46ea2a221e047a7ff398115e9976fd5f86')
 
 
 prepare() {
+  mv "${srcdir}"/"multicoreware-x265_git-"* "${srcdir}"/x265_${pkgver}
   cd "${srcdir}"/x265_${pkgver}
   
   for d in 8 10 12; do

@@ -3,9 +3,10 @@
 _realname=spice-gtk
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=0.37
-pkgrel=2
+pkgver=0.39
+pkgrel=1
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
 pkgdesc="GTK3 widget for SPICE clients (mingw-w64)"
 depends=("${MINGW_PACKAGE_PREFIX}-cyrus-sasl"
          "${MINGW_PACKAGE_PREFIX}-dbus-glib"
@@ -21,43 +22,65 @@ depends=("${MINGW_PACKAGE_PREFIX}-cyrus-sasl"
          "${MINGW_PACKAGE_PREFIX}-spice-protocol"
          "${MINGW_PACKAGE_PREFIX}-usbredir"
          "${MINGW_PACKAGE_PREFIX}-vala")
-makedepends=("${MINGW_PACKAGE_PREFIX}-gcc")
-options=('strip' 'staticlibs')
+makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
+             "${MINGW_PACKAGE_PREFIX}-meson"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-python-pyparsing"
+             "${MINGW_PACKAGE_PREFIX}-python-six")
+options=('strip' '!debug' 'staticlibs')
 license=("GPL 2")
 url="https://www.spice-space.org/"
-source=(https://www.spice-space.org/download/gtk/${_realname}-${pkgver}.tar.bz2
+source=(https://www.spice-space.org/download/gtk/${_realname}-${pkgver}.tar.xz{,.sig}
         001-win.patch)
-sha256sums=('1f28b706472ad391cda79a93fd7b4c7a03e84b88fc46ddb35dddbe323c923bb7'
+sha256sums=('23acbee197eaaec9bce6e6bfd885bd8f79708332639243ff04833020865713cd'
+            'SKIP'
             '8bb6f1896df080746736a74200f094bae4f48ac766d46a1793a761728fb01202')
+validpgpkeys=('206D3B352F566F3B0E6572E997D9123DE37A484F') # Victor Toso de Carvalho <me@victortoso.com>
 
 prepare() {
   cd "${srcdir}"/${_realname}-${pkgver}
   patch -p1 -i ${srcdir}/001-win.patch
-  autoreconf -isf
 }
 
 build() {
-  [[ -d "${srcdir}"/build-${MINGW_CHOST} ]] && rm -rf "${srcdir}"/build-${MINGW_CHOST}
-  mkdir -p build-${MINGW_CHOST}
-  cd build-${MINGW_CHOST}
+  [[ -d "${srcdir}/build-${MINGW_CHOST}" ]] && rm -rf "${srcdir}/build-${MINGW_CHOST}"
+  mkdir -p "${srcdir}/build-${MINGW_CHOST}" && cd "${srcdir}/build-${MINGW_CHOST}"
 
-  ../${_realname}-${pkgver}/configure \
-    --prefix=${MINGW_PREFIX} \
-    --libexecdir=${MINGW_PREFIX}/lib \
-    --host=${MINGW_CHOST} \
-    --target=${MINGW_CHOST} \
-    --build=${MINGW_CHOST} \
-    --enable-introspection \
-    --enable-vala \
-    --enable-lz4 \
-    --with-gtk=3.0
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+  ${MINGW_PREFIX}/bin/meson.exe \
+    --prefix="${MINGW_PREFIX}" \
+    --buildtype=plain \
+    -Dintrospection=enabled \
+    -Dsasl=enabled \
+    -Dusbredir=enabled \
+    -Dwebdav=enabled \
+    -Dintrospection=enabled \
+    -Dgtk_doc=enabled \
+    -Dvapi=enabled \
+    -Dopus=enabled \
+    -Dsmartcard=disabled \
+    -Dgtk=enabled \
+    -Dlz4=enabled \
+    -Dspice-common:manual=false \
+    "../${_realname}-${pkgver}"
 
-  make
+  ${MINGW_PREFIX}/bin/meson.exe compile
+}
+
+check() {
+  cd "${srcdir}/build-${MINGW_CHOST}"
+  ${MINGW_PREFIX}/bin/meson.exe test || true
 }
 
 package() {
   cd "${srcdir}/build-${MINGW_CHOST}"
-  make DESTDIR=${pkgdir} install
+  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/meson.exe install
+
+  # Remove full path reference
+  local PREFIX_WIN=$(cygpath -wm ${MINGW_PREFIX})
+  for pcfile in "${pkgdir}${MINGW_PREFIX}"/lib/pkgconfig/*.pc; do
+    sed -s "s|${PREFIX_WIN}|${MINGW_PREFIX}|g" -i "${pcfile}"
+  done
 
   install -Dm644 "${srcdir}/${_realname}-${pkgver}/COPYING" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/COPYING"
 }

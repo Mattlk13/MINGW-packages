@@ -3,9 +3,10 @@
 _realname=eog
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=3.36.0
+pkgver=3.38.0
 pkgrel=1
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
 pkgdesc="Eye of GNOME graphics viewer program (mingw-w64)"
 options=(strip staticlibs)
 depends=("${MINGW_PACKAGE_PREFIX}-adwaita-icon-theme"
@@ -14,6 +15,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-adwaita-icon-theme"
          "${MINGW_PACKAGE_PREFIX}-gdk-pixbuf2"
          "${MINGW_PACKAGE_PREFIX}-gobject-introspection-runtime"
          "${MINGW_PACKAGE_PREFIX}-gsettings-desktop-schemas"
+         "${MINGW_PACKAGE_PREFIX}-gtk-update-icon-cache"
          "${MINGW_PACKAGE_PREFIX}-zlib"
          "${MINGW_PACKAGE_PREFIX}-libexif"
          "${MINGW_PACKAGE_PREFIX}-libjpeg-turbo"
@@ -30,19 +32,24 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
 options=('strip' 'staticlibs')
 license=("GPL 2")
 url="https://www.gnome.org"
-install=eog-${CARCH}.install
 source=(https://download.gnome.org/sources/${_realname}/${pkgver%.*}/${_realname}-$pkgver.tar.xz
         002-relocation-support.patch
-        win.patch)
-sha256sums=('400308c517a4a3725ab0c7453f5b146b7a22a726eab5538a8c6c373aaebcce3e'
+        win.patch
+        003-gui-app.patch
+        004-symbol-vis.patch)
+sha256sums=('e1a3a47c38688cd538deda627c0eff113d05c316b1dde6243150437259d2d963'
             'a7e897da94d7033fd2ad4d81129f7a60cd0f68bd8d887c079c79cef802d02a4d'
-            'e04066d55e06a96faa9b828fbcdb6da6908bb118b7c58099a3404733d0cf70b3')
+            'e04066d55e06a96faa9b828fbcdb6da6908bb118b7c58099a3404733d0cf70b3'
+            '0569f7d5273c03d03095f455fa16974bf7a7cb83e2218190514530007bfc7b69'
+            '3a7470893fe6681e907f03304be5263bd92cb1f14f30a521faf5a6e37a5f39c6')
 
 prepare() {
   cd "${srcdir}"/${_realname}-${pkgver}
 
   patch -p1 -i ${srcdir}/002-relocation-support.patch
   patch -p1 -i ${srcdir}/win.patch
+  patch -p1 -i ${srcdir}/003-gui-app.patch
+  patch -p1 -i ${srcdir}/004-symbol-vis.patch
 }
 
 build() {
@@ -50,10 +57,14 @@ build() {
   mkdir -p build-${MINGW_CHOST}
   cd build-${MINGW_CHOST}
 
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
   meson \
+    --prefix=${MINGW_PREFIX} \
     --buildtype plain \
     -Dxmp=false \
     -Dcms=false \
+    -Dlibportal=false \
+    -Dintrospection=true \
     ../${_realname}-${pkgver}
 
   ninja
@@ -62,11 +73,7 @@ build() {
 package() {
   cd "${srcdir}/build-${MINGW_CHOST}"
 
-  DESTDIR=${pkgdir}${MINGW_PREFIX} ninja install
-
- local _PRE_WIN="$(cygpath -m ${MINGW_PREFIX})"
-  sed -e "s|${_PRE_WIN}|${MINGW_PREFIX}|g" \
-    -i ${pkgdir}${MINGW_PREFIX}/lib/pkgconfig/eog.pc
+  DESTDIR="${pkgdir}" ninja install
 
   install -Dm644 "${srcdir}/${_realname}-${pkgver}/COPYING" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/COPYING"
 }

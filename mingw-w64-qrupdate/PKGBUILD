@@ -1,0 +1,39 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+# Contributor: Jürgen Pfeifer <juergen@familiepfeifer.de>
+
+_realname=qrupdate
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}-svn")
+replaces=("${MINGW_PACKAGE_PREFIX}-${_realname}-svn")
+pkgver=1.1.2
+pkgrel=2
+pkgdesc="Fortran library for fast updates of QR and Cholesky decompositions (mingw-w64)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
+url="https://sourceforge.net/projects/qrupdate/"
+options=('strip' 'staticlibs')
+license=('GPL' 'LGPL')
+makedepends=("${MINGW_PACKAGE_PREFIX}-gcc-fortran")
+depends=("${MINGW_PACKAGE_PREFIX}-openblas"
+         "${MINGW_PACKAGE_PREFIX}-gcc-libgfortran")
+source=("https://downloads.sourceforge.net/project/qrupdate/qrupdate/1.2/${_realname}-${pkgver}.tar.gz")
+sha256sums=('e2a1c711dc8ebc418e21195833814cb2f84b878b90a2774365f0166402308e08')
+
+build() {
+  mkdir -p ${srcdir}/build-${CARCH} && cd ${srcdir}/build-${CARCH}
+  cp -pR ../${_realname}-${pkgver}/* .
+  make FPICFLAGS="" lib
+  gfortran -shared -o lib${_realname}.dll -Wl,--out-implib,lib${_realname}.dll.a src/*.o -lopenblas -lgfortran
+}
+
+package() {
+  cd ${srcdir}/build-${CARCH}
+  mkdir -p ${pkgdir}${MINGW_PREFIX}/bin
+  mkdir -p ${pkgdir}${MINGW_PREFIX}/lib
+  cp -pf lib${_realname}.dll ${pkgdir}${MINGW_PREFIX}/bin
+  cp -pf lib${_realname}*.a ${pkgdir}${MINGW_PREFIX}/lib
+  mkdir -p ${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}
+  cp -pf ${srcdir}/${_realname}-${pkgver}/COPYING* \
+    ${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}
+}

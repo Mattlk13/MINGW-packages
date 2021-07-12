@@ -3,10 +3,11 @@
 _realname=sqlcipher
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=4.3.0
+pkgver=4.4.3
 pkgrel=1
 pkgdesc="SQLite extension that provides transparent 256-bit AES encryption of database files"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 url="https://www.zetetic.net/sqlcipher/"
 license=('BSD')
 depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
@@ -14,17 +15,12 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-readline")
 makedepends=("${MINGW_PACKAGE_PREFIX}-tcl")
 source=("${_realname}-${pkgver}.tar.gz::https://github.com/${_realname}/${_realname}/archive/v${pkgver}.tar.gz"
-        "01-fix_dep.diff"
         "02-fix-tcl-find.patch")
-sha256sums=('fccb37e440ada898902b294d02cde7af9e8706b185d77ed9f6f4d5b18b4c305f'
-            '50e5456387b901b72fc70aec5a6438a306bbbdd65c07d5214bffcc4b1f7de40c'
+sha256sums=('b8df69b998c042ce7f8a99f07cf11f45dfebe51110ef92de95f1728358853133'
             'd30c43a28eaeedcafde98d0f9a76fd8d676ee77732c9dc38e028147faa5adca0')
 
 prepare() {
   cd "${srcdir}"/${_realname}-${pkgver}
-
-  # Debian patch
-  patch -p1 -i "${srcdir}"/01-fix_dep.diff
 
   patch -p1 -i "${srcdir}"/02-fix-tcl-find.patch
   autoreconf -fiv

@@ -6,24 +6,22 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
 provides=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
 conflicts=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
 replaces=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
-pkgver=3.0.0
-pkgrel=1
+pkgver=8.9.1
+pkgrel=2
 pkgdesc="Faker generates fake data for you (mingw-w64)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 url="https://faker.readthedocs.io/en/master/"
 license=('MIT')
-depends=("${MINGW_PACKAGE_PREFIX}-python"
-         "${MINGW_PACKAGE_PREFIX}-python-dateutil"
-         "${MINGW_PACKAGE_PREFIX}-python-six"
+depends=("${MINGW_PACKAGE_PREFIX}-python-dateutil"
          "${MINGW_PACKAGE_PREFIX}-python-text-unidecode")
 makedepends=("${MINGW_PACKAGE_PREFIX}-python-setuptools")
 checkdepends=("${MINGW_PACKAGE_PREFIX}-python-ukpostcodeparser"
               "${MINGW_PACKAGE_PREFIX}-python-mock"
               "${MINGW_PACKAGE_PREFIX}-python-email-validator")
-install=${_realname}3-${CARCH}.install
 options=('staticlibs' 'strip' '!debug')
 source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/joke2k/faker/archive/v${pkgver}.tar.gz")
-sha512sums=('021b0b50f5431955e966be3fd9d2cc70e2521c47c129dc9ce04b19a722e60316db8d3eb446e226207ca0413d3c32af22d12e73be2c8d51ea6fdd7fb77ef057b3')
+sha512sums=('b5e244537fe6f8aa61e58e0df38837f20579a7fb811af772ae1f0ef8bb66c1f87d828d4a5ade65749793dd8dd2cb21a21f5694c19cdd6cfbd54203a3f02a6ec2')
 
 prepare() {
   cd "${srcdir}"
@@ -51,9 +49,7 @@ package() {
 
   install -Dm644 LICENSE.txt "${pkgdir}${MINGW_PREFIX}/share/licenses/python-${_realname}/LICENSE.txt"
 
-  local PREFIX_WIN=$(cygpath -wm ${MINGW_PREFIX})
-  # fix python command in files
-  for _f in "${pkgdir}${MINGW_PREFIX}"/bin/*.py; do
-    sed -e "s|${PREFIX_WIN}|${MINGW_PREFIX}|g" -i ${_f}
+  for _f in "${pkgdir}${MINGW_PREFIX}"/bin/*-script.py; do
+    sed -e '1 { s/^#!.*$// }' -i ${_f}
   done
 }

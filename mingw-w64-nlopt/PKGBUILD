@@ -3,10 +3,11 @@
 _realname=nlopt
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=2.6.1
+pkgver=2.6.2
 pkgrel=2
 pkgdesc="A library for nonlinear optimization (mingw-w64)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
 makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-python3"
              "${MINGW_PACKAGE_PREFIX}-python3-numpy"
@@ -14,7 +15,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
 url='https://nlopt.readthedocs.io/en/latest/'
 license=('LGPLv2.1+')
 source=("${_realname}-${pkgver}.tar.gz::https://github.com/stevengj/nlopt/archive/v${pkgver}.tar.gz")
-sha256sums=('66d63a505187fb6f98642703bd0ef006fedcae2f9a6d1efa4f362ea919a02650')
+sha256sums=('cfa5981736dd60d0109c534984c4e13c615314d3584cf1c392a155bfe1a3b17e')
 noextract=(${_realname}-${pkgver}.tar.gz)
 
 prepare () {

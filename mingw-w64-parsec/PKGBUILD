@@ -1,0 +1,63 @@
+# Maintainer: Rafal Brzegowy <rafal.brzegowy@yahoo.com>
+
+_realname=parsec
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=3.0.2012
+pkgrel=2
+pkgdesc='PaRSEC: Parallel Runtime Scheduling and Execution Controller (mingw-w64)'
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
+depends=()
+makedepends=("${MINGW_PACKAGE_PREFIX}-hwloc"
+             "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja")
+license=('custom')
+url='http://icl.utk.edu/parsec/'
+source=("${_realname}-${pkgver}.tar.gz::https://bitbucket.org/icldistcomp/parsec/get/${_realname}-${pkgver}.tar.gz")
+sha256sums=('3c9af37ecc5d843dae749ae35884650082250b3d496b345d017b415768a8c15d')
+
+prepare() {
+    cd ${srcdir}
+    rm -rf ${_realname}-${pkgver}.tar.gz
+    cp -r * ${_realname}-${pkgver}
+}
+
+build() {
+  #Static Build
+  [[ -d "${srcdir}/build-${MINGW_CHOST}-static" ]] && rm -rf "${srcdir}/build-${MINGW_CHOST}-static"
+  mkdir -p "${srcdir}/build-${MINGW_CHOST}-static" && cd "${srcdir}/build-${MINGW_CHOST}-static"
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    ${MINGW_PREFIX}/bin/cmake \
+    -G'Ninja' \
+    -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCUDA_USE_STATIC_CUDA_RUNTIME=OFF \
+    -DPARSEC_GPU_WITH_CUDA=OFF \
+    -DPARSEC_WITH_DEVEL_HEADERS=ON \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DPARSEC_DIST_WITH_MPI=OFF \
+    -DBUILD_TESTING=OFF \
+    ../${_realname}-${pkgver}
+
+  ${MINGW_PREFIX}/bin/cmake --build ./
+}
+
+package() {
+  #Static Install
+  cd "${srcdir}/build-${MINGW_CHOST}-static"
+  DESTDIR=${pkgdir} cmake --build ./ --target install
+  install -Dm644 ${srcdir}/${_realname}-${pkgver}/License.txt ${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
+
+  # Remove msys2 full path reference
+  local PREFIX_WIN=$(cygpath -wm ${MINGW_PREFIX})
+  for _f in "${pkgdir}${MINGW_PREFIX}"/share/cmake/parsec/*.cmake; do
+    sed -e "s|${PREFIX_WIN}|\$\{_IMPORT_PREFIX\}|g" -i "${_f}"
+  done
+
+  for _f in "${pkgdir}${MINGW_PREFIX}"/lib/pkgconfig/*.pc; do
+    sed -s "s|${PREFIX_WIN}|${MINGW_PREFIX}|g" -i "${_f}"
+  done
+  sed -s "s|${PREFIX_WIN}|${MINGW_PREFIX}|g" -i "${pkgdir}${MINGW_PREFIX}"/include/parsec/parsec_config.h
+}

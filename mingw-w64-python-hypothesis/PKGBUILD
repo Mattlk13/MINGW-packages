@@ -6,15 +6,14 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
 provides=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
 conflicts=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
 replaces=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
-pkgver=5.6.0
-pkgrel=1
+pkgver=6.14.1
+pkgrel=2
 pkgdesc="Advanced Quickcheck style testing library for Python (mingw-w64)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 url='https://hypothesis.readthedocs.org'
 license=('MIT')
-depends=("${MINGW_PACKAGE_PREFIX}-python"
-         "${MINGW_PACKAGE_PREFIX}-python-attrs"
-         "${MINGW_PACKAGE_PREFIX}-python-coverage"
+depends=("${MINGW_PACKAGE_PREFIX}-python-attrs"
          "${MINGW_PACKAGE_PREFIX}-python-sortedcontainers")
 optdepends=("${MINGW_PACKAGE_PREFIX}-python-pytz: for datetime and django module"
             "${MINGW_PACKAGE_PREFIX}-python-faker: for fakefactory and django module"
@@ -35,7 +34,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-python-setuptools")
 #              "${MINGW_PACKAGE_PREFIX}-python-pandas")
 options=('staticlibs' 'strip' '!debug')
 source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/HypothesisWorks/hypothesis/archive/hypothesis-python-${pkgver}.tar.gz")
-sha512sums=('40fe07f6f19d667a961d4ace7febe0c5476922c8929f0b7f77af52229e6d667a1a1b2d40c91e2ea18d9919288821508e598afcdb4b5edb71f03084e43d1eaa4b')
+sha512sums=('b84776e2bfff130c4db7582defbe9bc55183d624b45defffebdc954ca8e1dda1dec78f921e1bc7839a1167c37bce693711cd500da547dc6f2a8fa610c0bd3540')
 
 # Helper macros to help make tasks easier #
 apply_patch_with_msg() {

@@ -3,11 +3,12 @@
 _realname=zeromq
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=4.3.2
-_cppzmqver=4.5.0
+pkgver=4.3.4
+_cppzmqver=4.7.1
 pkgrel=1
 pkgdesc="Fast messaging system built on sockets, C and C++ bindings. aka 0MQ, ZMQ (mingw-w64)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 url="https://www.zeromq.org/"
 license=("LGPL")
 depends=("${MINGW_PACKAGE_PREFIX}-libsodium")
@@ -16,15 +17,30 @@ options=('staticlibs' 'strip')
 source=("https://github.com/zeromq/libzmq/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.gz"
         "zmq-${_cppzmqver}.hpp::https://raw.githubusercontent.com/zeromq/cppzmq/v${_cppzmqver}/zmq.hpp"
         "zmq_addon-${_cppzmqver}.hpp::https://raw.githubusercontent.com/zeromq/cppzmq/v${_cppzmqver}/zmq_addon.hpp"
-        "001-mingw-__except-fixes.patch")
-sha256sums=('ebd7b5c830d6428956b67a0454a7f8cbed1de74b3b01e5c33c5378e22740f763'
-            '132c0e40e5a2f97e6946d2a3d0428e05c916c6d2c5702a59188f9788e09d2321'
-            'cb0e966111b73689c9fb908bef46ddaf327cba299c41f24d67f1a0151e11242d'
-            '054314f319d9b7d085975e01ddb7bcf39377ceef38b9796cd40d40cde6ce78ca')
+        "001-testutil_different_signedness-fix.patch"
+        "002-unused.patch::https://patch-diff.githubusercontent.com/raw/zeromq/libzmq/pull/4181.patch")
+sha256sums=('c593001a89f5a85dd2ddf564805deb860e02471171b3f204944857336295c3e5'
+            '92b92acc0a93f9511097df20cc9ed4041bde4d0d9c6cdd6cc2ada29c84487ab8'
+            '705bac35610437f22243da8cf300488d1e37c0815c60f70809051a8be8d0cb4c'
+            '0bfdbd8caca39791c909c2cbeba5878a9c430d8a9dd1f06458f42656f593e8c6'
+            '035e2d7cfa8a5d5fff2d0ae9be17c58f0e4d300cc34182091fa25d2d7ac4ac57')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying ${_patch}"
+    patch -Nbp1 -i "${srcdir}/${_patch}"
+  done
+}
 
 prepare() {
   cd ${_realname}-${pkgver}
-  patch -Np1 -i "${srcdir}/001-mingw-__except-fixes.patch"
+  apply_patch_with_msg \
+    001-testutil_different_signedness-fix.patch \
+    002-unused.patch
+
+  autoreconf -fi
 }
 
 build() {

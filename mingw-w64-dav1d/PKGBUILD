@@ -3,12 +3,13 @@
 _realname=dav1d
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=0.6.0
+pkgver=0.9.0
 pkgrel=1
 pkgdesc="AV1 cross-platform decoder focused on speed and correctness (mingw-w64)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 url='https://code.videolan.org/videolan/dav1d'
-license=('BSD')
+license=('BSD-2-Clause')
 makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
              "${MINGW_PACKAGE_PREFIX}-pkg-config"
              "${MINGW_PACKAGE_PREFIX}-nasm"
@@ -17,7 +18,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
 depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
 options=('staticlibs' 'strip' 'emptydirs')
 source=("https://downloads.videolan.org/pub/videolan/dav1d/${pkgver}/dav1d-${pkgver}.tar.xz"{,.asc})
-sha256sums=('099f3115bbdd1ac2338dff73d5fccc1a9a98bf7c1228bd1affe7f62fc529b370'
+sha256sums=('cfae88e8067c9b2e5b96d95a7a00155c353376fe9b992a96b4336e0eab19f9f6'
             'SKIP')
 validpgpkeys=('65F7C6B4206BD057A7EB73787180713BE58D1ADC') # VideoLAN Release Signing Key
 
@@ -26,7 +27,9 @@ build() {
   [[ -d build-${MINGW_CHOST} ]] && rm -rf build-${MINGW_CHOST}
   mkdir -p build-${MINGW_CHOST} && cd build-${MINGW_CHOST}
 
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
   ${MINGW_PREFIX}/bin/meson \
+      --prefix=${MINGW_PREFIX} \
       --default-library both \
       --buildtype plain \
       -Denable_tests=false \
@@ -35,14 +38,16 @@ build() {
   ${MINGW_PREFIX}/bin/ninja
 }
 
-package() {
-  DESTDIR=${pkgdir}${MINGW_PREFIX} ninja -C "${srcdir}/build-${MINGW_CHOST}" install
+check() {
+  cd build-${MINGW_CHOST}
+  ${MINGW_PREFIX}/bin/meson test
+}
 
-  for pcfile in "${pkgdir}${MINGW_PREFIX}"/lib/pkgconfig/*.pc; do
-    sed -i "s|$(cygpath -m ${MINGW_PREFIX})|${MINGW_PREFIX}|g" "${pcfile}"
-  done
+package() {
+  DESTDIR="${pkgdir}" ninja -C "${srcdir}/build-${MINGW_CHOST}" install
 
   # License
   install -Dm644 "${srcdir}/${_realname}-${pkgver}/COPYING" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/COPYING"
   install -Dm644 "${srcdir}/${_realname}-${pkgver}/doc/PATENTS" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/PATENTS"
+  install -Dm644 "${srcdir}/${_realname}-${pkgver}/README.md" "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}/README.md"
 }
